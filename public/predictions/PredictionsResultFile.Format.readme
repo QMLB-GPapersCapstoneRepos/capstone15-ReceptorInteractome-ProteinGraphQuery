@@ -1,0 +1,19 @@
+In each line, Items are Separated by TAB. Please OPEN the file using EXCEL. 
+The pairs are sorted based on the "column E" already.
+
+----------------------------------------------------------------------
+column A, gene ID of gene1 ==> geneID1
+column B, gene Symbol of gene1 ==> geneSym1
+column C, gene ID of gene2 ==> geneID2
+column D, gene Symbol of gene2 ==> geneSym2
+
+column E, predicted score for this pair ==> RFpnScore
+
+column F, the label of HPRD data set : [1 means interact; 2 means not-interact]  ==> hprdLabel
+
+column H, gene description of gene1 ==> GeneID1:Synonyms:description
+
+column J, features we used in the computational method ==> 27features
+
+column L, GDB ID for gene1 ==> GDBID
+column M, genetic disorder information for gene1 ==> GeneticDisorder

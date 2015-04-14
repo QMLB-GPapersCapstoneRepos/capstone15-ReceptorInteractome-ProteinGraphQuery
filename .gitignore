@@ -1,0 +1,5 @@
+test-results/
+tmp/
+routes/
+*.swp
+public/predictions/*.tar.gz

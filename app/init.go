@@ -1,6 +1,7 @@
 package app
 
 import "github.com/revel/revel"
+import "github.com/nickjanus/ProteinGraphQuery/app/controllers"
 
 func init() {
 	// Filters is the default set of global filters.
@@ -19,10 +20,7 @@ func init() {
 		revel.ActionInvoker,           // Invoke the action.
 	}
 
-	// register startup functions with OnAppStart
-	// ( order dependent )
-	// revel.OnAppStart(InitDB)
-	// revel.OnAppStart(FillCache)
+	revel.OnAppStart(controllers.InitDB)
 }
 
 // TODO turn this into revel.HeaderFilter
