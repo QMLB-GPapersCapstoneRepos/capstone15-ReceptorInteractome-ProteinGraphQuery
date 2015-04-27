@@ -10,8 +10,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const graphBucketName string = "graph"
@@ -28,6 +30,7 @@ func (entry *GraphEntry) Encode() []byte {
 }
 
 func InitDB() {
+	var wg sync.WaitGroup
 	dbName := "db/HumanPredictions.db"
 
 	//if _, err := os.Stat(dbName); os.IsNotExist(err) {
@@ -52,9 +55,14 @@ func InitDB() {
 			file, err := os.Open("public/predictions/" + name)
 			Check(err)
 			defer file.Close()
-			ImportArchivedFile(file, db)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				ImportArchivedFile(file, db)
+			}()
 		}
 	}
+	wg.Wait()
 	//}
 	log.Println("Database is setup")
 }
@@ -65,7 +73,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	gzipReader, err := gzip.NewReader(f)
 	Check(err)
 	reader := tar.NewReader(gzipReader)
-	header, err := reader.Next() //error: truncated gzip input for human.hprdlabel.receptor.RFall.ScorLablFeaGeneInfo.allhuman.ggi.10886.addDisease.tar.gz
+	header, err := reader.Next()
 	Check(err)
 
 	if header.Typeflag != tar.TypeReg {
@@ -80,7 +88,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	}
 	lines := bytes.Split(contents, []byte("\n"))
 
-	db.Update(func(tx *bolt.Tx) error {
+	db.Batch(func(tx *bolt.Tx) error {
 		graphBucket := tx.Bucket([]byte(graphBucketName))
 		for _, line := range lines[1:] {
 			if len(line) == 0 {
@@ -102,6 +110,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 
 func Check(err error) {
 	if err != nil {
+		debug.PrintStack()
 		log.Fatal(err)
 		panic(err)
 	}
