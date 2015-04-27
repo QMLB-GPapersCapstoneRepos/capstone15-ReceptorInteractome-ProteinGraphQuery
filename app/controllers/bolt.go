@@ -50,7 +50,7 @@ func InitDB() {
 		if strings.HasSuffix(name, ".tar.gz") {
 			log.Println(name)
 			file, err := os.Open("public/predictions/" + name)
-			Check(err) //error: truncated gzip input for human.hprdlabel.receptor.RFall.ScorLablFeaGeneInfo.allhuman.ggi.10886.addDisease.tar.gz
+			Check(err)
 			defer file.Close()
 			ImportArchivedFile(file, db)
 		}
@@ -65,7 +65,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	gzipReader, err := gzip.NewReader(f)
 	Check(err)
 	reader := tar.NewReader(gzipReader)
-	header, err := reader.Next()
+	header, err := reader.Next() //error: truncated gzip input for human.hprdlabel.receptor.RFall.ScorLablFeaGeneInfo.allhuman.ggi.10886.addDisease.tar.gz
 	Check(err)
 
 	if header.Typeflag != tar.TypeReg {
@@ -74,7 +74,9 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	}
 
 	if contents, err = ioutil.ReadAll(reader); err != nil {
-		Check(err)
+		log.Println("Had a problem reading this archive!")
+		log.Println(err)
+		contents = contents[:len(contents)-1] //assume last item is incomplete and remove
 	}
 	lines := bytes.Split(contents, []byte("\n"))
 
