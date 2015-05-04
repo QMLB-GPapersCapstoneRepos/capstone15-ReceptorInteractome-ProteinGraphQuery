@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"github.com/boltdb/bolt"
+	"github.com/nickjanus/ProteinGraphQuery/app/models"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,23 +16,15 @@ import (
 	"sync"
 )
 
-const graphBucketName string = "graph"
-
-type GraphEntry struct {
-	Target string
-	Score  float64
-}
-
 func main() {
 	var wg sync.WaitGroup
-	dbName := "db/HumanPredictions.db"
 
 	log.Println("Generating new database...")
-	db, err := bolt.Open(dbName, 0600, nil)
+	db, err := bolt.Open(models.DatabaseName, 0600, nil)
 	Check(err)
 	defer db.Close()
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket([]byte(graphBucketName))
+		_, err := tx.CreateBucket([]byte(models.EntryBucketName))
 		Check(err)
 		return nil
 	})
@@ -59,7 +52,7 @@ func main() {
 func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	var contents []byte
 	var target []byte
-	entries := make([]GraphEntry, 0)
+	entries := make([]models.GraphEntry, 0)
 
 	gzipReader, err := gzip.NewReader(f)
 	Check(err)
@@ -89,7 +82,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 		if target = items[1]; len(target) > 0 {
 			score, err := strconv.ParseFloat(string(items[4]), 64)
 			Check(err)
-			entry := GraphEntry{string(target), score}
+			entry := models.GraphEntry{string(target), score}
 			Check(err)
 			entries = append(entries, entry)
 		}
@@ -98,7 +91,7 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	Check(err)
 
 	db.Batch(func(tx *bolt.Tx) error {
-		graphBucket := tx.Bucket([]byte(graphBucketName))
+		graphBucket := tx.Bucket([]byte(models.EntryBucketName))
 
 		err = graphBucket.Put(key, value)
 		Check(err)

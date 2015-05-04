@@ -4,4 +4,5 @@ routes/
 initdb
 *.db
 *.swp
+*.swo
 public/predictions/*.tar.gz

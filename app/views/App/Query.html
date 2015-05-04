@@ -1,0 +1,21 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+<h1>Query Results</h1>
+<table style="width:100%">
+  <tr>
+    <td>Name</td>
+    <td>Score</td>
+  </tr>
+
+  {{ range $val := .graph}}
+    <tr>
+      <td>{{ $val.Target }}</td>
+      <td>{{ $val.Score }}</td>
+    </tr>
+  {{ end }}
+</table>
+
+<a href="/">Back to form</a>
+
+{{template "footer.html" .}}
