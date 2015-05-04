@@ -1,12 +1,11 @@
-package controllers
+package main
 
 import (
 	"archive/tar"
-	"compress/gzip"
-	"github.com/boltdb/bolt"
-	//"github.com/revel/revel"
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"github.com/boltdb/bolt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -23,25 +22,17 @@ type GraphEntry struct {
 	Score  float64
 }
 
-func (entry *GraphEntry) Encode() []byte {
-	result, err := json.Marshal(entry)
-	Check(err)
-	return result
-}
-
-func InitDB() {
+func main() {
 	var wg sync.WaitGroup
 	dbName := "db/HumanPredictions.db"
 
-	//if _, err := os.Stat(dbName); os.IsNotExist(err) {
 	log.Println("Generating new database...")
 	db, err := bolt.Open(dbName, 0600, nil)
 	Check(err)
 	defer db.Close()
 	db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(graphBucketName))
-		//Check(err)
-		log.Println(err)
+		Check(err)
 		return nil
 	})
 
@@ -51,7 +42,6 @@ func InitDB() {
 	for _, entry := range entries {
 		name := entry.Name()
 		if strings.HasSuffix(name, ".tar.gz") {
-			log.Println(name)
 			file, err := os.Open("public/predictions/" + name)
 			Check(err)
 			defer file.Close()
@@ -63,12 +53,13 @@ func InitDB() {
 		}
 	}
 	wg.Wait()
-	//}
 	log.Println("Database is setup")
 }
 
 func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	var contents []byte
+	var target []byte
+	entries := make([]GraphEntry, 0)
 
 	gzipReader, err := gzip.NewReader(f)
 	Check(err)
@@ -82,28 +73,35 @@ func ImportArchivedFile(f *os.File, db *bolt.DB) {
 	}
 
 	if contents, err = ioutil.ReadAll(reader); err != nil {
-		log.Println("Had a problem reading this archive!")
+		log.Println("Had a problem reading this archive: " + f.Name())
 		log.Println(err)
 		contents = contents[:len(contents)-1] //assume last item is incomplete and remove
 	}
+
 	lines := bytes.Split(contents, []byte("\n"))
+	key := bytes.Split(lines[1], []byte("\t"))[3]
+	for _, line := range lines[1:] {
+		if len(line) == 0 {
+			continue
+		}
+
+		items := bytes.Split(line, []byte("\t"))
+		if target = items[1]; len(target) > 0 {
+			score, err := strconv.ParseFloat(string(items[4]), 64)
+			Check(err)
+			entry := GraphEntry{string(target), score}
+			Check(err)
+			entries = append(entries, entry)
+		}
+	}
+	value, err := json.Marshal(entries)
+	Check(err)
 
 	db.Batch(func(tx *bolt.Tx) error {
 		graphBucket := tx.Bucket([]byte(graphBucketName))
-		for _, line := range lines[1:] {
-			if len(line) == 0 {
-				continue
-			}
-			items := bytes.Split(line, []byte("\t"))
-			score, err := strconv.ParseFloat(string(items[4]), 64)
-			Check(err)
-			entry := GraphEntry{string(items[3]), score}
-			Check(err)
-			if key := items[1]; len(key) > 0 {
-				err = graphBucket.Put(key, entry.Encode())
-				Check(err)
-			}
-		}
+
+		err = graphBucket.Put(key, value)
+		Check(err)
 		return nil
 	})
 }

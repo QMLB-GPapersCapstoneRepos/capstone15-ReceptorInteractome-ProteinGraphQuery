@@ -1,6 +1,7 @@
 test-results/
 tmp/
 routes/
+initdb
 *.db
 *.swp
 public/predictions/*.tar.gz

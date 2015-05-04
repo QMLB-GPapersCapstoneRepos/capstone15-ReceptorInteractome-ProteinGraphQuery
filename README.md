@@ -1,18 +1,11 @@
-# Welcome to Revel
-
 ## Getting Started
+This site is based on revel, a web framework for the go language.  Deployment and setup operations are partially automated using rake (i.e. ruby make).  Go and rake are prerequisites for deploying the site.
 
-A high-productivity web framework for the [Go language](http://www.golang.org/).
+### Rake commands:
 
-### Start the web server:
+    rake install: Installs dependencies and compiles tool for initializing human ppi predictions database. 
 
-    revel run myapp
-
-   Run with <tt>--help</tt> for options.
-
-### Go to http://localhost:9000/ and you'll see:
-
-"It works"
+    rake launch_server[procs]: Sets the environmental variable which dictates how many system threads Go can utilize and launches the app. 
 
 ### Description of Contents
 
@@ -25,15 +18,18 @@ The default directory structure of a generated Revel application:
         models          App domain models
         routes          Reverse routes (generated code)
         views           Templates
-      tests             Test suites
       conf              Configuration files
         app.conf        Main configuration file
         routes          Routes definition
+      db                Contains database file
       messages          Message files
+      pgq_initdb        Source for program used to populate db
       public            Public assets
         css             CSS files
         js              Javascript files
         images          Image files
+        predictions     Human PPI prediction archives
+      tests             Test suites
 
 app
 
@@ -60,16 +56,3 @@ public
 test
 
     Tests are kept in the tests directory. Revel provides a testing framework that makes it easy to write and run functional tests against your application.
-
-### Follow the guidelines to start developing your application:
-
-* The README file created within your application.
-* The [Getting Started with Revel](http://revel.github.io/tutorial/index.html).
-* The [Revel guides](http://revel.github.io/manual/index.html).
-* The [Revel sample apps](http://revel.github.io/samples/index.html).
-* The [API documentation](http://revel.github.io/docs/godoc/index.html).
-
-## Contributing
-We encourage you to contribute to Revel! Please check out the [Contributing to Revel
-guide](https://github.com/revel/revel/blob/master/CONTRIBUTING.md) for guidelines about how
-to proceed. [Join us](https://groups.google.com/forum/#!forum/revel-framework)!
