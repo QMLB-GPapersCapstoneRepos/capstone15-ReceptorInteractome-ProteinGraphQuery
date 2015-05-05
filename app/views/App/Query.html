@@ -2,16 +2,18 @@
 {{template "header.html" .}}
 
 <h1>Query Results</h1>
-<table style="width:100%">
+<table style="width:50%">
   <tr>
-    <td>Name</td>
+    <td>Protein Name</td>
+    <td>Protein Name</td>
     <td>Score</td>
   </tr>
 
-  {{ range $val := .graph}}
+  {{ range $val := .graph.Edges}}
     <tr>
-      <td>{{ $val.Target }}</td>
-      <td>{{ $val.Score }}</td>
+      <td>{{ $val.Origin }}</td>
+      <td>{{ $val.Destination }}</td>
+      <td>{{ $val.Score}}</td>
     </tr>
   {{ end }}
 </table>

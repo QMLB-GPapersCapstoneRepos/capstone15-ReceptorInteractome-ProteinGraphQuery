@@ -7,6 +7,7 @@ import (
 	"github.com/revel/revel"
 	"log"
 	"strconv"
+	"time"
 )
 
 type App struct {
@@ -18,41 +19,23 @@ func (c App) Index() revel.Result {
 }
 
 func (c App) Query(query, cutoff string) revel.Result {
-	var queryResult []byte
-	var results []models.GraphEntry
-	resultsAboveCutoff := make([]models.GraphEntry, 0)
 	n, err := strconv.ParseFloat(cutoff, 64)
 	if err != nil {
 		log.Fatal("Could not parse cutoff argument")
 	}
 
-	db, err := bolt.Open(models.DatabaseName, 0600, nil)
-	defer db.Close()
+	//TODO share db connection between requests
+	db, err := bolt.Open(models.DatabaseName, 0600, &bolt.Options{Timeout: 5 * time.Second})
 	if err != nil {
-		log.Fatal("Could not open database!")
+		log.Fatal(err)
 	}
+	defer db.Close()
 
-	db.Batch(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(models.EntryBucketName))
-		queryResult = b.Get([]byte(query))
-		return nil
-	})
-
-	if err := json.Unmarshal(queryResult, &results); err != nil {
-		log.Println("Could not decode database entry!")
-	}
-
-	for _, entry := range results {
-		if entry.MakesCutoff(n) {
-			resultsAboveCutoff = append(resultsAboveCutoff, entry)
-		}
-	}
-	result, err := json.Marshal(resultsAboveCutoff)
+	graph := models.RetrieveSubgraph(db, query, n)
+	result, err := json.Marshal(graph)
 	if err != nil {
 		log.Fatal("Cannot encode resulting graph")
 	}
-	graph := resultsAboveCutoff
-	//graph := string(result)
 	log.Println(string(result))
 
 	return c.Render(graph)
