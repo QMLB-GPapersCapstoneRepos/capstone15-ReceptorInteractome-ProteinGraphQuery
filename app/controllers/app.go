@@ -2,14 +2,13 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/boltdb/bolt"
+	"github.com/nickjanus/ProteinGraphQuery/app"
 	"github.com/nickjanus/ProteinGraphQuery/app/models"
 	"github.com/revel/revel"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type App struct {
@@ -41,18 +40,7 @@ func (c App) Query(query, cutoff string) revel.Result {
 	query = strings.Replace(query, " ", "", -1)
 	queries := strings.Split(query, ",")
 
-	//TODO figure out how to share db connection between requests, this is main bottleneck
-	db, err := bolt.Open(models.DatabaseName, 0600, &bolt.Options{Timeout: 5 * time.Second})
-	if err != nil {
-		log.Println(err)
-		c.Validation.Error("DB connection timed out, please try again.")
-		c.Validation.Keep()
-		c.FlashParams()
-		return c.Redirect(App.Index)
-	}
-	defer db.Close()
-
-	graph := models.RetrieveSubgraph(db, queries, n)
+	graph := models.RetrieveSubgraph(app.DB, queries, n)
 	graphEnc, err := json.Marshal(graph)
 	if err != nil {
 		log.Fatal("Cannot encode resulting graph")

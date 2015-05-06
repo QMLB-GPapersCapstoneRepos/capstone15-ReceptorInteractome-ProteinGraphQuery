@@ -1,6 +1,13 @@
 package app
 
-import "github.com/revel/revel"
+import (
+	"github.com/boltdb/bolt"
+	"github.com/nickjanus/ProteinGraphQuery/app/models"
+	"github.com/revel/revel"
+	"log"
+)
+
+var DB *bolt.DB
 
 func init() {
 	// Filters is the default set of global filters.
@@ -17,6 +24,15 @@ func init() {
 		revel.InterceptorFilter,       // Run interceptors around the action.
 		revel.CompressFilter,          // Compress the result.
 		revel.ActionInvoker,           // Invoke the action.
+	}
+
+	revel.OnAppStart(InitDB)
+}
+
+func InitDB() {
+	var err error
+	if DB, err = bolt.Open(models.DatabaseName, 0600, nil); err != nil {
+		log.Fatal(err)
 	}
 }
 

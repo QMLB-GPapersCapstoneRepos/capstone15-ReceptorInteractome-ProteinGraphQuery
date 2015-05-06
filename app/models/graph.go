@@ -75,6 +75,7 @@ func RetrieveSubgraph(db *bolt.DB, searchNodes []string, cutoff float64) Graph {
 	x := 0
 	y := 0
 	edgeID := 0
+	//TODO there is much to refactor and parallelize
 	for _, n := range searchNodes {
 		if _, present := nodeSet[n]; !present {
 			nodes = append(nodes, Node{n, n, x, y, 5})
