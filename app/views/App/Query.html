@@ -1,5 +1,13 @@
-{{set . "title" "Home"}}
+{{set . "title" "Query Result"}}
 {{template "header.html" .}}
+
+<style type="text/css">
+  #container {
+    max-width: 400px;
+    height: 400px;
+    margin: auto;
+  }
+</style>
 
 <h1>Query Results</h1>
 <table style="width:50%">
@@ -17,6 +25,30 @@
     </tr>
   {{ end }}
 </table>
+
+<div id="container"></div>
+<script src="/public/js/sigma/sigma.min.js"></script>
+<script src="/public/js/sigma/plugins/sigma.layout.forceAtlas2.min.js"></script>
+<script>
+data = JSON.parse({{.jsonGraph}})
+
+  s = new sigma({ 
+    graph: data,
+    container: 'container',
+    settings: {
+      defaultNodeColor: '#ec5148'
+    }
+  });
+  
+  s.startForceAtlas2({
+    worker: true, 
+    barnesHutOptimize: false, 
+    slowDown: 500,
+    edgeWeightInfluence: 1
+  });
+
+setTimeout(function() {s.stopForceAtlas2();},3500)
+</script>
 
 <a href="/">Back to form</a>
 

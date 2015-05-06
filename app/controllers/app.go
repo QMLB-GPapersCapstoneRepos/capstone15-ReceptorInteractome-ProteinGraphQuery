@@ -32,11 +32,11 @@ func (c App) Query(query, cutoff string) revel.Result {
 	defer db.Close()
 
 	graph := models.RetrieveSubgraph(db, query, n)
-	result, err := json.Marshal(graph)
+	graphEnc, err := json.Marshal(graph)
 	if err != nil {
 		log.Fatal("Cannot encode resulting graph")
 	}
-	log.Println(string(result))
+	jsonGraph := string(graphEnc)
 
-	return c.Render(graph)
+	return c.Render(graph, jsonGraph)
 }

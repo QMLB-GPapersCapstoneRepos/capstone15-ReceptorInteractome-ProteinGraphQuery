@@ -49,16 +49,18 @@ func genEntryMap(entries *[]GraphEntry, cutoff float64) map[string]float64 {
 
 //For visualizing graph
 type Node struct {
-	Name string `json:"id"`
-	X    int    `json:"x"`
-	Y    int    `json:"y"`
+	Name  string `json:"id"`
+	Label string `json:"label"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
+	Size  int    `json:"size"`
 }
 
 type Edge struct {
-	Name        string `json:"id"`
-	Origin      string `json:"source"`
-	Destination string `json:"target"`
-	Score       float64
+	Name        string  `json:"id"`
+	Origin      string  `json:"source"`
+	Destination string  `json:"target"`
+	Score       float64 `json:"weight"`
 }
 
 type Graph struct {
@@ -69,26 +71,26 @@ type Graph struct {
 func RetrieveSubgraph(db *bolt.DB, node string, cutoff float64) Graph {
 	edges := make([]Edge, 0)
 	nodes := make([]Node, 0)
-	x := 1
+	x := 0
 	y := 0
 	edgeID := 0
-	nodes = append(nodes, Node{node, 0, 0})
+	nodes = append(nodes, Node{node, node, x, y, 5})
 
 	refNodes := genEntryMap(retrieveEntries(db, node), cutoff)
 	for destName, score := range refNodes {
-		nodes = append(nodes, Node{destName, x, y})
-		edges = append(edges, Edge{string(edgeID), node, destName, score})
-
-		x = (x + 1) % 10
-		y = x / 10
 		edgeID++
+		x = (x + 1) % 3
+		y = edgeID / 3
+
+		nodes = append(nodes, Node{destName, destName, x, y, 3})
+		edges = append(edges, Edge{strconv.Itoa(edgeID) + "e", node, destName, score})
 	}
 
 	for refName, _ := range refNodes {
 		otherNodes := genEntryMap(retrieveEntries(db, refName), cutoff)
 
-		for otherNodeName, _ := range otherNodes {
-			score, present := refNodes[otherNodeName]
+		for otherNodeName, score := range otherNodes {
+			_, present := refNodes[otherNodeName]
 			if present {
 				edges = append(edges,
 					Edge{strconv.Itoa(edgeID), refName, otherNodeName, score})
