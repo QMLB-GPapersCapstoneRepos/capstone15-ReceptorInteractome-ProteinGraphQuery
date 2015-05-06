@@ -17,8 +17,8 @@
     <div class="span6">
       {{template "flash.html" .}}
       <form action="/App/Query" method="GET">
-          Query:<input type="text" name="query" /><br/>
-          Cutoff:<input type="text" name="cutoff" /><br/>
+        Query:<input type="text" name="query" value="{{.flash.query}}" /><br/>
+        Cutoff:<input type="text" name="cutoff" value="{{.flash.cutoff}}" /><br/>
           <input type="submit" value="Search" />
       </form>
     </div>

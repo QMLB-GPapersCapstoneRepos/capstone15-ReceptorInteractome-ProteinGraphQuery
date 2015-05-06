@@ -68,33 +68,41 @@ type Graph struct {
 	Edges []Edge `json:"edges"`
 }
 
-func RetrieveSubgraph(db *bolt.DB, node string, cutoff float64) Graph {
+func RetrieveSubgraph(db *bolt.DB, searchNodes []string, cutoff float64) Graph {
 	edges := make([]Edge, 0)
 	nodes := make([]Node, 0)
+	nodeSet := make(map[string]bool)
 	x := 0
 	y := 0
 	edgeID := 0
-	nodes = append(nodes, Node{node, node, x, y, 5})
+	for _, n := range searchNodes {
+		if _, present := nodeSet[n]; !present {
+			nodes = append(nodes, Node{n, n, x, y, 5})
+			nodeSet[n] = true
+		}
+		refNodes := genEntryMap(retrieveEntries(db, n), cutoff)
+		for destName, score := range refNodes {
+			edgeID++
+			x = (x + 1) % 3
+			y = edgeID / 3
 
-	refNodes := genEntryMap(retrieveEntries(db, node), cutoff)
-	for destName, score := range refNodes {
-		edgeID++
-		x = (x + 1) % 3
-		y = edgeID / 3
+			if _, present := nodeSet[destName]; !present {
+				nodes = append(nodes, Node{destName, destName, x, y, 3})
+				nodeSet[destName] = true
+			}
+			edges = append(edges, Edge{strconv.Itoa(edgeID) + "e", n, destName, score})
+		}
 
-		nodes = append(nodes, Node{destName, destName, x, y, 3})
-		edges = append(edges, Edge{strconv.Itoa(edgeID) + "e", node, destName, score})
-	}
+		for refName, _ := range refNodes {
+			otherNodes := genEntryMap(retrieveEntries(db, refName), cutoff)
 
-	for refName, _ := range refNodes {
-		otherNodes := genEntryMap(retrieveEntries(db, refName), cutoff)
-
-		for otherNodeName, score := range otherNodes {
-			_, present := refNodes[otherNodeName]
-			if present {
-				edges = append(edges,
-					Edge{strconv.Itoa(edgeID), refName, otherNodeName, score})
-				edgeID++
+			for otherNodeName, score := range otherNodes {
+				_, present := refNodes[otherNodeName]
+				if present {
+					edges = append(edges,
+						Edge{strconv.Itoa(edgeID), refName, otherNodeName, score})
+					edgeID++
+				}
 			}
 		}
 	}

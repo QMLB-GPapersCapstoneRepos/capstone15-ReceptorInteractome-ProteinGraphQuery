@@ -41,10 +41,14 @@ func (c App) Query(query, cutoff string) revel.Result {
 	query = strings.Replace(query, " ", "", -1)
 	queries := strings.Split(query, ",")
 
-	//TODO share db connection between requests
+	//TODO figure out how to share db connection between requests, this is main bottleneck
 	db, err := bolt.Open(models.DatabaseName, 0600, &bolt.Options{Timeout: 5 * time.Second})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		c.Validation.Error("DB connection timed out, please try again.")
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(App.Index)
 	}
 	defer db.Close()
 
