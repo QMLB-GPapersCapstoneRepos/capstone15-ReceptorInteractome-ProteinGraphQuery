@@ -17,5 +17,9 @@ task :launch_server, [:threads] => :init_db do |t, args|
   args.with_defaults(:threads => max_procs || 4)
   ENV['GOMAXPROCS'] = args[:threads]
 
+  `revel run github.com/nickjanus/ProteinGraphQuery prod 8080`
+end
+
+task :launch_dev do
   `revel run github.com/nickjanus/ProteinGraphQuery`
 end

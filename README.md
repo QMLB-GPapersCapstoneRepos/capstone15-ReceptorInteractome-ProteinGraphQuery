@@ -5,7 +5,11 @@ This site is based on revel, a web framework for the go language.  Deployment an
 
     rake install: Installs dependencies and compiles tool for initializing human ppi predictions database. 
 
-    rake launch_server[procs]: Sets the environmental variable which dictates how many system threads Go can utilize (procs) and launches the app. 
+    rake init_db: Runs tool that initializes the predictions database.  This will take about ~30 seconds with sufficient RAM (>10GB) and an SSD.
+
+    rake launch_server[procs]: Sets the environmental variable which dictates how many system threads Go can utilize (procs) and launches the app for production, listening to port 8080.
+
+    rake launch_dev: Launches app for development.
     
 ### Deployment Setup
 Ubuntu comes with a service called Upstart, which isused for automatically starting services on system startup.  The configuration file for this web app is located on the host at: /etc/init/go-pcg-http.conf
