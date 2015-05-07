@@ -5,7 +5,13 @@ This site is based on revel, a web framework for the go language.  Deployment an
 
     rake install: Installs dependencies and compiles tool for initializing human ppi predictions database. 
 
-    rake launch_server[procs]: Sets the environmental variable which dictates how many system threads Go can utilize and launches the app. 
+    rake launch_server[procs]: Sets the environmental variable which dictates how many system threads Go can utilize (procs) and launches the app. 
+    
+### Deployment Setup
+Ubuntu comes with a service called Upstart, which isused for automatically starting services on system startup.  The configuration file for this web app is located on the host at: /etc/init/go-pcg-http.conf
+
+
+The app uses Apache as a reverse proxy for handling requests.  
 
 ### Description of Contents
 
@@ -46,13 +52,3 @@ conf
 messages
 
     The messages directory contains all localized message files.
-
-public
-
-    Resources stored in the public directory are static assets that are served directly by the Web server. Typically it is split into three standard sub-directories for images, CSS stylesheets and JavaScript files.
-
-    The names of these directories may be anything; the developer need only update the routes.
-
-test
-
-    Tests are kept in the tests directory. Revel provides a testing framework that makes it easy to write and run functional tests against your application.
